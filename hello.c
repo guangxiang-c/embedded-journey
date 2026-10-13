@@ -2,6 +2,6 @@
 
 int main(void)
 {
-    printf("Hello World!\n");
+    printf("程光祥=%d", 12+34);
     return 0;
 }
