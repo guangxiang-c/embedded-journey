@@ -1,11 +1,19 @@
 #include <stdio.h>
 
+// int mystrlen(const char *s) {
+//     int cnt = 0;
+//     while(s[cnt] != '\0') {
+//         cnt ++;
+//     }
+//     return cnt;
+// }
+
 int mystrlen(const char *s) {
-    int cnt = 0;
-    while(s[cnt] != '\0') {
-        cnt ++;
+    const char *p = s;
+    while (*p != '\0') {
+        p++;
     }
-    return cnt;
+    return p - s;    // 两个指针相减 = 中间隔了多少个元素
 }
 
 int main()
