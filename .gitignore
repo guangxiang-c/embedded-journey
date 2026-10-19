@@ -9,6 +9,7 @@ Listings/
 *.d
 *.dep
 *.bak
-*.uvguix
+*.uvguix.*
+*.uvoptx
 *.scvd
 JLinkLog.txt

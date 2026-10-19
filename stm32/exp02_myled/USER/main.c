@@ -16,19 +16,27 @@ int main(void)
     uint32_t last_blink = 0; // 上次翻灯时刻
     u8 len;
     u16 times = 0;
+    int beat = 500;
 
     while (1)
     {
         uint32_t now = HAL_GetTick(); // 现在几点（毫秒）
 
         // 按键控制-面包板红灯
-        if (key_scan())
+        int key_command = key_scan();
+        // 短按
+        if (key_command == 1)
         {
             HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_7);
         }
+        // 长按：心跳快慢两档来回切
+        else if (key_command == 2)
+        {
+            beat = (beat == 500) ? 100 : 500;
+        }
 
         // 板子红灯-心跳
-        if (now - last_blink >= 500)
+        if (now - last_blink >= beat)
         {
             last_blink = now;
             HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_9);
@@ -57,10 +65,31 @@ int main(void)
                 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_10, GPIO_PIN_RESET); // 绿灯亮
                 printf("LED ON\r\n");
             }
-            if (strcmp(content, "off") == 0)
+            else if (strcmp(content, "off") == 0)
             {
                 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_10, GPIO_PIN_SET); // 绿灯灭
                 printf("LED OFF\r\n");
+            }
+            // 命令 red on/red off 控制PF7
+            else if (strcmp(content, "red on") == 0)
+            {
+                HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
+                printf("red LED ON\r\n");
+            }
+            else if (strcmp(content, "red off") == 0)
+            {
+                HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_SET);
+                printf("red LED OFF\r\n");
+            }
+            // 命令 beat200 修改心跳
+            else if (strcmp(content, "beat200") == 0)
+            {
+                beat = 200;
+            }
+            else
+            {
+                printf("Unknown command \r\n");
+                beat = 500;
             }
 
             USART_RX_STA = 0;
@@ -73,5 +102,5 @@ int main(void)
             delay_ms(10);
         }
     }
-		return 0;
+    return 0;
 }
