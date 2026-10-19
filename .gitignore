@@ -1,2 +1,14 @@
 *.exe
 .vscode/
+# Keil / STM32 build artifacts
+OBJ/
+Listings/
+*.o
+*.axf
+*.crf
+*.d
+*.dep
+*.bak
+*.uvguix
+*.scvd
+JLinkLog.txt
