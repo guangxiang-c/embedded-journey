@@ -23,14 +23,14 @@ int main(void)
         uint32_t now = HAL_GetTick(); // 现在几点（毫秒）
 
         // 按键控制-面包板红灯
-        int key_command = key_scan();
+        key_event_t key_command = key_scan();
         // 短按
-        if (key_command == 1)
+        if (key_command == KEY_SHORT)
         {
             HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_7);
         }
         // 长按：心跳快慢两档来回切
-        else if (key_command == 2)
+        else if (key_command == KEY_LONG)
         {
             beat = (beat == 500) ? 100 : 500;
         }

@@ -14,7 +14,7 @@ void key_init(void)
 	HAL_GPIO_Init(GPIOF, &GPIO_Initure);
 }
 
-int key_scan(void)
+key_event_t key_scan(void)
 {
 	static uint32_t last_sample = 0; // 上次采样时刻
 	static int stable = 0;			 // 已确认的稳定状态
@@ -25,7 +25,7 @@ int key_scan(void)
 
 	uint32_t now = HAL_GetTick();
 	// 未到10ms采样周期 -> 立即返回
-	if (now - last_sample < 10)
+	if (now - last_sample < KEY_SAMPLE_MS)
 	{
 		return 0;
 	}
@@ -44,7 +44,7 @@ int key_scan(void)
 	}
 
 	// 连续3次采样（30ms）结果一致 -> 抖动平息，状态可信
-	if (same_cnt >= 3 && current != stable)
+	if (same_cnt >= KEY_DEBOUNCE_CNT && current != stable)
 	{
 		stable = current;
 		// 稳定状态0->1（刚按下）
@@ -52,24 +52,24 @@ int key_scan(void)
 		{
 			press_time = now; // 记录按下时刻的时间戳
 			long_reported = 0;
-			return 0;
+			return KEY_NONE;
 		}
 		// 稳定状态1->0（松手了）
 		else
 		{
 			if (long_reported == 0)
 			{
-				return 1;
+				return KEY_SHORT;
 			}
-			return 0;
+			return KEY_NONE;
 		}
 	}
 
-	if (stable == 1 && long_reported == 0 && now - press_time >= 1000)
+	if (stable == 1 && long_reported == 0 && now - press_time >= KEY_LONG_PRESS_MS)
 	{
 		long_reported = 1;
-		return 2;
+		return KEY_LONG;
 	}
 
-	return 0;
+	return KEY_NONE;
 }
