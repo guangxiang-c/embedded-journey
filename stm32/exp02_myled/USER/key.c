@@ -27,7 +27,7 @@ key_event_t key_scan(void)
 	// 未到10ms采样周期 -> 立即返回
 	if (now - last_sample < KEY_SAMPLE_MS)
 	{
-		return 0;
+		return KEY_NONE;
 	}
 	last_sample = now;
 
