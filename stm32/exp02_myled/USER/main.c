@@ -5,8 +5,8 @@
 #include "key.h"
 #include "string.h"
 
-#define BEAT_SLOW_MS 500   // 心跳慢档
-#define BEAT_FAST_MS 100   // 心跳快档
+#define BEAT_SLOW_MS 500 // 心跳慢档
+#define BEAT_FAST_MS 100 // 心跳快档
 
 int main(void)
 {
@@ -84,7 +84,7 @@ int main(void)
                 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_SET);
                 printf("red LED OFF\r\n");
             }
-            // 命令 beat200 修改心跳
+            // 命令 beat100 修改心跳
             else if (strcmp(content, "beat100") == 0)
             {
                 beat = BEAT_FAST_MS;
