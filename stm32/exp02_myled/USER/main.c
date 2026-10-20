@@ -5,6 +5,9 @@
 #include "key.h"
 #include "string.h"
 
+#define BEAT_SLOW_MS 500   // 心跳慢档
+#define BEAT_FAST_MS 100   // 心跳快档
+
 int main(void)
 {
     HAL_Init();                     // HAL库初始化
@@ -16,7 +19,7 @@ int main(void)
     uint32_t last_blink = 0; // 上次翻灯时刻
     u8 len;
     u16 times = 0;
-    int beat = 500;
+    int beat = BEAT_SLOW_MS;
 
     while (1)
     {
@@ -32,7 +35,7 @@ int main(void)
         // 长按：心跳快慢两档来回切
         else if (key_command == KEY_LONG)
         {
-            beat = (beat == 500) ? 100 : 500;
+            beat = (beat == BEAT_SLOW_MS) ? BEAT_FAST_MS : BEAT_SLOW_MS;
         }
 
         // 板子红灯-心跳
@@ -82,14 +85,13 @@ int main(void)
                 printf("red LED OFF\r\n");
             }
             // 命令 beat200 修改心跳
-            else if (strcmp(content, "beat200") == 0)
+            else if (strcmp(content, "beat100") == 0)
             {
-                beat = 200;
+                beat = BEAT_FAST_MS;
             }
             else
             {
                 printf("Unknown command \r\n");
-                beat = 500;
             }
 
             USART_RX_STA = 0;
