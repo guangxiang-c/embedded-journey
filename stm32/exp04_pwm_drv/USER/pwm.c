@@ -6,7 +6,7 @@ static void tim3_clk_on(void) { __HAL_RCC_TIM3_CLK_ENABLE(); };
 TIM_HandleTypeDef htim; // ¶¨Ê±Æ÷¾ä±ú
 TIM_OC_InitTypeDef sConfigOC;
 
-struct pwm_table_item pwm_table[] = {
+static struct pwm_table_item pwm_table[] = {
     {GPIO_PIN_9, GPIOF, TIM14, TIM_CHANNEL_1, GPIO_AF9_TIM14, tim14_clk_on, RCC_AHB1ENR_GPIOFEN, 499, 83},
     {GPIO_PIN_7, GPIOF, TIM11, TIM_CHANNEL_1, GPIO_AF3_TIM11, tim11_clk_on, RCC_AHB1ENR_GPIOFEN, 499, 83},
     {GPIO_PIN_6, GPIOA, TIM3, TIM_CHANNEL_1, GPIO_AF2_TIM3, tim3_clk_on, RCC_AHB1ENR_GPIOAEN, 499, 83}};
