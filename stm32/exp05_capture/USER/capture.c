@@ -2,13 +2,13 @@
 
 TIM_HandleTypeDef TIM4_Handler; // 定时器 4 句柄
 
-// 定时器 5 通道 1 输入捕获配置
+// 定时器 4 通道 1 输入捕获配置
 // arr：自动重装值(TIM4 是 32 位的!!)
 // psc：时钟预分频数
 void TIM4_CH1_Cap_Init(u32 arr, u16 psc)
 {
 	TIM_IC_InitTypeDef TIM4_CH1Config;
-	TIM4_Handler.Instance = TIM4;											 // 通用定时器 5
+	TIM4_Handler.Instance = TIM4;											 // 通用定时器 4
 	TIM4_Handler.Init.Prescaler = psc;										 // 分频系数
 	TIM4_Handler.Init.CounterMode = TIM_COUNTERMODE_UP;						 // 向上计数器
 	TIM4_Handler.Init.Period = arr;											 // 自动装载值
@@ -20,7 +20,6 @@ void TIM4_CH1_Cap_Init(u32 arr, u16 psc)
 	TIM4_CH1Config.ICFilter = 0;											 // 配置输入滤波器，不滤波
 	HAL_TIM_IC_ConfigChannel(&TIM4_Handler, &TIM4_CH1Config, TIM_CHANNEL_1); // 配置 TIM4 通道 1
 	HAL_TIM_IC_Start_IT(&TIM4_Handler, TIM_CHANNEL_1);						 // 开启 TIM4 的捕获通道 1，并且开启捕获中断
-	__HAL_TIM_ENABLE_IT(&TIM4_Handler, TIM_IT_UPDATE);						 // 使能更新中断
 }
 
 // 定时器 4 底层驱动，时钟使能，引脚配置
@@ -53,43 +52,22 @@ void TIM4_IRQHandler(void)
 	HAL_TIM_IRQHandler(&TIM4_Handler); // 定时器共用处理函数
 }
 
-// 定时器更新中断（计数溢出）中断处理回调函数，
-// 该函数在 HAL_TIM_IRQHandler 中会被调用
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-// 更新中断（溢出）发生时执行
-{
-	if ((TIM4CH1_CAPTURE_STA & 0X80) == 0) // 还未成功捕获
-	{
-		if (TIM4CH1_CAPTURE_STA & 0X40) // 已经捕获到高电平了
-		{
-			if ((TIM4CH1_CAPTURE_STA & 0X3F) == 0X3F) // 高电平太长了
-			{
-				TIM4CH1_CAPTURE_STA |= 0X80; // 标记成功捕获了一次
-				TIM4CH1_CAPTURE_VAL = 0XFFFFFFFF;
-			}
-			else
-				TIM4CH1_CAPTURE_STA++;
-		}
-	}
-}
-
 static u32 last = 0;
 
 // 定时器输入捕获中断处理回调函数，该函数在 HAL_TIM_IRQHandler 中会被调用
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) // 捕获中断发生时执行
 {
 	u32 now = HAL_TIM_ReadCapturedValue(&TIM4_Handler, TIM_CHANNEL_1); // 获取当前的捕获值
-	
+
 	if ((TIM4CH1_CAPTURE_STA & 0X40) == 0) // 还没有基准值
 	{
 		last = now;
 		TIM4CH1_CAPTURE_STA |= 0X40;
 	}
-	else 
+	else
 	{
 		TIM4CH1_CAPTURE_VAL = now - last;
 		last = now;
-		TIM4CH1_CAPTURE_STA |= 0X80;	  // 周期
+		TIM4CH1_CAPTURE_STA |= 0X80; // 周期
 	}
-		
 }

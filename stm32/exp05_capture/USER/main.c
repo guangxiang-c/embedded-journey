@@ -11,7 +11,6 @@ int main()
 {
   int dir = 1;
   u16 compare = 0;
-  long long temp = 0;
 
   HAL_Init();                     // 初始化HAL库
   Stm32_Clock_Init(336, 8, 2, 7); // 初始化时钟168Mhz
