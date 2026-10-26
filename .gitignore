@@ -13,3 +13,4 @@ Listings/
 *.uvoptx
 *.scvd
 JLinkLog.txt
+Output/
