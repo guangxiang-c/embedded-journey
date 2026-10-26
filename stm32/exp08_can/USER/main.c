@@ -12,6 +12,7 @@ int main()
   uart_init(115200);              // ≥ı ºªØ USART
 	
 	CAN1_Init();
+	printf("boot 500k\r\n");
 	uint8_t tx[8] = {1,2,3,4,5,6,7,8};
 	while (1)
 	{
