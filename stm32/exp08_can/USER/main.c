@@ -14,10 +14,13 @@ int main()
 	CAN1_Init();
 	printf("boot 500k\r\n");
 	uint8_t tx[8] = {1,2,3,4,5,6,7,8};
+	int cnt = 0;
 	while (1)
 	{
-			CAN1_Send(0x131, tx, 8);      // 标准帧 ID 用 0x131（0x1314 超 11 位了）
-			delay_ms(200);
+			uint8_t ok = CAN1_Send(0x131, tx, cnt);
+			//printf("TX ok=%d MSR=%08x TSR=%08x ESR=%08x\r\n", ok, CAN2->MSR, CAN2->TSR, CAN2->ESR);
+			delay_ms(1000);
+			cnt++;
 
 			uint32_t id;  uint8_t rx[8];
 			uint8_t len = CAN1_Receive(&id, rx);
