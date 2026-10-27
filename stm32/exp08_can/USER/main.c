@@ -17,8 +17,9 @@ int main()
 	int cnt = 0;
 	while (1)
 	{
-			uint8_t ok = CAN1_Send(0x131, tx, cnt);
-			//printf("TX ok=%d MSR=%08x TSR=%08x ESR=%08x\r\n", ok, CAN2->MSR, CAN2->TSR, CAN2->ESR);
+			tx[0] = cnt;
+			uint8_t ok = CAN1_Send(0x131, tx, 8);
+			printf("TX ok=%d cnt=%d\r\n", ok, cnt);
 			delay_ms(1000);
 			cnt++;
 

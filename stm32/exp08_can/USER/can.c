@@ -5,27 +5,30 @@ CAN_HandleTypeDef hcan1; // 句柄： HAL_CAN_Init 的户口本
 void CAN1_Init(void)
 {
 	// 外设上电
-	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	//__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_CAN1_CLK_ENABLE();
-	__HAL_RCC_CAN2_CLK_ENABLE();
+	//__HAL_RCC_CAN2_CLK_ENABLE();
 
-	// PB12=RX, PB13=TX, 复用AF9
+	
 	GPIO_InitTypeDef gpio = {0};
-	gpio.Pin = GPIO_PIN_12 | GPIO_PIN_13;
+	gpio.Pin = GPIO_PIN_11 | GPIO_PIN_12; // PA11=RX, PA12=TX, 复用AF9
+	//gpio.Pin = GPIO_PIN_12 | GPIO_PIN_13; // PB12=RX, PB13=TX, 复用AF9
 	gpio.Mode = GPIO_MODE_AF_PP;
 	gpio.Pull = GPIO_PULLUP;
 	gpio.Speed = GPIO_SPEED_HIGH;
-	gpio.Alternate = GPIO_AF9_CAN2;
-	HAL_GPIO_Init(GPIOB, &gpio);
+	//gpio.Alternate = GPIO_AF9_CAN2;
+	gpio.Alternate = GPIO_AF9_CAN1;
+	HAL_GPIO_Init(GPIOA, &gpio);
 	
 	// CAN参数：回环  42Mhz ÷ （BRP + 1） ÷ N = 1Mbps
-	hcan1.Instance = CAN2;
-	hcan1.Init.Prescaler = 7;
-	//hcan1.Init.Mode = CAN_MODE_SILENT;   // 静默模式：只听，不发、不应答
+	hcan1.Instance = CAN1;
+	//hcan1.Instance = CAN2;
+	hcan1.Init.Prescaler = 6;
 	hcan1.Init.Mode = CAN_MODE_NORMAL;
 	hcan1.Init.SJW = CAN_SJW_1TQ;
-	hcan1.Init.BS1 = CAN_BS1_6TQ;
-	hcan1.Init.BS2 = CAN_BS2_5TQ;
+	hcan1.Init.BS1 = CAN_BS1_4TQ;
+	hcan1.Init.BS2 = CAN_BS2_2TQ;
 	hcan1.Init.TTCM = DISABLE;
 	hcan1.Init.ABOM = ENABLE;
 	hcan1.Init.AWUM = DISABLE;
@@ -36,7 +39,7 @@ void CAN1_Init(void)
 	
 	// 滤波器: 全收(掩码全0 = 来者不拒)
 	CAN_FilterConfTypeDef filter = {0};
-	filter.FilterNumber = 14;
+	filter.FilterNumber = 0;
 	filter.FilterMode = CAN_FILTERMODE_IDMASK;
 	filter.FilterScale = CAN_FILTERSCALE_32BIT;
 	filter.FilterIdHigh = 0;
@@ -48,7 +51,7 @@ void CAN1_Init(void)
 	filter.BankNumber = 14;
 	HAL_CAN_ConfigFilter(&hcan1, &filter);
 	
-	printf("BTR=%08x MSR=%08x\r\n", CAN2->BTR, CAN2->MSR);
+	printf("BTR=%08x MSR=%08x\r\n", CAN1->BTR, CAN1->MSR);
 }
 	
 uint8_t CAN1_Send(uint32_t id, uint8_t *data, uint8_t len){
