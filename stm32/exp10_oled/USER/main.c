@@ -26,6 +26,10 @@ int main()
 
   oled_init();
   oled_clear();
+	
+	//oled_show_char(0, 0, 'A');
+	oled_show_str(0,0,"HELLO");
+	oled_show_str(0,2,"CAN OK");
 
   pwm_setup_all();
   TIM4_CH1_Cap_Init(0XFFFFFFFF, 84 - 1); // 以 1MHZ 的频率计数

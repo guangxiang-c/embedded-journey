@@ -1,5 +1,6 @@
 /* ============ oled.c ==========*/
 #include "oled.h"
+#include "oledfont.h"
 
 I2C_HandleTypeDef hi2c2;
 
@@ -71,7 +72,53 @@ void oled_clear(void)
 		oled_cmd(0x10);         // 列地址高
 		uint8_t buf[129];
 		buf[0] = CTRL_DATA;
-		for(uint8_t i = 1; i < 128; i++) buf[i] = 0xFF;
+		for(uint8_t i = 1; i < 128; i++) buf[i] = 0x00;
 	  HAL_I2C_Master_Transmit(&hi2c2, OLED_ADDR, buf, 129, 100);
 	}
 }
+
+
+// 在（x列，y列）显示一个8x16的字符，x:0~15列,y:0~3行（每行2页）
+void oled_show_char(uint8_t x, uint8_t y, char ch)
+{
+	const uint8_t *font = F8X16 + (ch - ' ') * 16;  // 字库从空格排起
+	uint8_t buf[9];buf[0] = CTRL_DATA;
+	
+	
+	oled_cmd(0xB0 + y*2);                    // 字符占y*2和y*2+1两页
+	oled_cmd(0x00 + ((x*8) & 0x0F));         
+	oled_cmd(0x10 + ((x*8) >> 4));
+	for(uint8_t i = 0; i < 8; i++) buf[i+1] = font[i];
+	HAL_I2C_Master_Transmit(&hi2c2, OLED_ADDR, buf, 9, 100);
+	
+	oled_cmd(0xB0 + y*2 + 1);                
+	oled_cmd(0x00 + ((x*8) & 0x0F));         
+	oled_cmd(0x10 + ((x*8) >> 4));
+	for(uint8_t i = 0; i < 8; i++) buf[i+1] = font[i+8];
+	HAL_I2C_Master_Transmit(&hi2c2, OLED_ADDR, buf, 9, 100);
+}
+	
+void oled_show_str(uint8_t x, uint8_t y, const char *s)
+{
+	while(*s) oled_show_char(x++, y, *s++);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
