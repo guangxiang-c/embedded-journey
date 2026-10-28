@@ -4,6 +4,7 @@
 #include "pwm.h"
 #include "capture.h"
 #include "oled.h"
+#include <stdio.h>
 
 extern u8 TIM4CH1_CAPTURE_STA;  // 输入捕获状态
 extern u32 TIM4CH1_CAPTURE_VAL; // 输入捕获值
@@ -19,24 +20,29 @@ int main()
   uart_init(115200);              // 初始化 USART
 
   oled_i2c_init();
-  //if (HAL_I2C_IsDeviceReady(&hi2c2, OLED_ADDR, 3, 100) == HAL_OK)
-  //  printf("OLED ACK: 0x3C online\r\n");
-  //else
-  //  printf("OLED NO ACK: check wiring/power/pullup\r\n");
+  // if (HAL_I2C_IsDeviceReady(&hi2c2, OLED_ADDR, 3, 100) == HAL_OK)
+  //   printf("OLED ACK: 0x3C online\r\n");
+  // else
+  //   printf("OLED NO ACK: check wiring/power/pullup\r\n");
 
   oled_init();
   oled_clear();
-	
-	//oled_show_char(0, 0, 'A');
-	oled_show_str(0,0,"HELLO");
-	oled_show_str(0,2,"CAN OK");
+
+  // oled_show_char(0, 0, 'A');
+  oled_show_str(0, 0, "HELLO");
+  // oled_show_str(0,2,"CAN OK");
 
   pwm_setup_all();
   TIM4_CH1_Cap_Init(0XFFFFFFFF, 84 - 1); // 以 1MHZ 的频率计数
 
   while (1)
   {
-    delay_ms(10);
+
+    delay_ms(100);
+    char buf[16];
+    sprintf(buf, "CMP:%3d", compare);
+    oled_show_str(0, 2, buf);
+
     if (dir)
     {
       compare++;
