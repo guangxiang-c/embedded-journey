@@ -25,12 +25,18 @@ int main()
     printf("OLED ACK: 0x3C online\r\n");
   else
     printf("OLED NO ACK: check wiring/power/pullup\r\n");
+
+  if (HAL_I2C_IsDeviceReady(&hi2c2, 0x38 << 1, 3, 100) == HAL_OK)
+    printf("AHT20 ACK: 0x38 online\r\n");
+  else
+    printf("AHT20 NO ACK\r\n");
+
   oled_init();
   oled_clear();
 
   // oled_show_char(0, 0, 'A');
-  oled_show_str(0, 0, "HELLO");
-  // oled_show_str(0,2,"CAN OK");
+  // oled_show_str(0, 0, "HELLO");
+  oled_show_str(0,3,"CAN OK");
 
   pwm_setup_all();
   TIM4_CH1_Cap_Init(0XFFFFFFFF, 84 - 1); // 以 1MHZ 的频率计数
@@ -71,6 +77,38 @@ int main()
       last_oled = now;
       sprintf(buf, "CMP:%3d", compare);
       oled_show_str(0, 2, buf);
+    }
+
+    // 任务3：ATH20 -- 每1秒采一次
+    static uint32_t last_aht = 0;
+    if (now - last_aht >= 1000)
+    {
+      last_aht = now;
+      uint8_t cmd[3] = {0xAC, 0x33, 0x00};
+      HAL_I2C_Master_Transmit(&hi2c2, 0x38 << 1, cmd, 3, 100);
+      delay_ms(80); // 等它测完（手册说 75ms+）
+
+      uint8_t data[6] = {0};
+      if (HAL_I2C_Master_Receive(&hi2c2, 0x38 << 1, data, 6, 100) == HAL_OK)
+      {
+        if ((data[0] & 0x80) == 0) // bit7=0 表示测量完成
+        {
+          uint32_t humi = ((uint32_t)data[1] << 12) | ((uint32_t)data[2] << 4) | (data[3] >> 4);
+          uint32_t temp = (((uint32_t)data[3] & 0x0F) << 16) | ((uint32_t)data[4] << 8) | data[5];
+
+          int humi_x10 = (humi * 1000) / 1048576;         // 定点：0.1%
+          int temp_x10 = ((temp * 2000) / 1048576) - 500; // 定点：0.1℃
+
+          printf("T:%d.%dC  H:%d.%d%%\r\n",
+                 temp_x10 / 10, temp_x10 % 10,
+                 humi_x10 / 10, humi_x10 % 10);
+          // 把 printf 那两行换成：
+          sprintf(buf, "T:%2d.%dC", temp_x10 / 10, temp_x10 % 10);
+          oled_show_str(0, 0, buf);
+          sprintf(buf, "H:%2d.%d%%", humi_x10 / 10, humi_x10 % 10);
+          oled_show_str(0, 1, buf);
+        }
+      }
     }
   }
 
