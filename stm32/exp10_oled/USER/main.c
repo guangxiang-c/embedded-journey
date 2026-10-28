@@ -13,6 +13,7 @@ int main()
 {
   int dir = 1;
   u16 compare = 0;
+  char buf[16];
 
   HAL_Init();                     // 初始化HAL库
   Stm32_Clock_Init(336, 8, 2, 7); // 初始化时钟168Mhz
@@ -20,11 +21,10 @@ int main()
   uart_init(115200);              // 初始化 USART
 
   oled_i2c_init();
-  // if (HAL_I2C_IsDeviceReady(&hi2c2, OLED_ADDR, 3, 100) == HAL_OK)
-  //   printf("OLED ACK: 0x3C online\r\n");
-  // else
-  //   printf("OLED NO ACK: check wiring/power/pullup\r\n");
-
+  if (HAL_I2C_IsDeviceReady(&hi2c2, OLED_ADDR, 3, 100) == HAL_OK)
+    printf("OLED ACK: 0x3C online\r\n");
+  else
+    printf("OLED NO ACK: check wiring/power/pullup\r\n");
   oled_init();
   oled_clear();
 
@@ -38,19 +38,13 @@ int main()
   while (1)
   {
 
-    delay_ms(100);
-    char buf[16];
-    sprintf(buf, "CMP:%3d", compare);
-    oled_show_str(0, 2, buf);
+    delay_ms(10);
 
+    // 任务1：呼吸灯
     if (dir)
-    {
       compare++;
-    }
     else
-    {
       compare--;
-    }
     if (compare > 300)
       dir = 0;
     if (compare == 0)
@@ -66,8 +60,17 @@ int main()
         printf("period=%u us, freq=%lu Hz\r\n", TIM4CH1_CAPTURE_VAL, 1000000UL / TIM4CH1_CAPTURE_VAL);
       }
       // 不合理 → 丢弃这帧，照样清标志开始下一轮
-
       TIM4CH1_CAPTURE_STA = 0; // 开启下一次捕获
+    }
+
+    // 任务2：OLED
+    uint32_t now = HAL_GetTick();
+    static uint32_t last_oled = 0;
+    if (now - last_oled >= 100)
+    {
+      last_oled = now;
+      sprintf(buf, "CMP:%3d", compare);
+      oled_show_str(0, 2, buf);
     }
   }
 
